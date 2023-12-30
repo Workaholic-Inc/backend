@@ -10,4 +10,7 @@ export class TodoDto {
 
   @IsBoolean()
   is_complete: boolean;
+
+  @IsBoolean()
+  archive: boolean;
 }

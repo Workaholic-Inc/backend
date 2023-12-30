@@ -1,6 +1,6 @@
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
-import { TodoDto } from './todo-dto';
+import { TodoDto } from './dto';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 
@@ -12,11 +12,15 @@ export class TodoService {
     private config: ConfigService,
   ) {}
 
-  async getAllTodos(Request) {
+  async getAllTodos(dto: TodoDto, Request) {
     try {
       const response = await this.prisma.todo.findMany({
+        orderBy: [{ is_completed: 'asc' }, { id: 'desc' }],
         where: {
-          user_id: Request.user?.userId,
+          AND: {
+            user_id: Request.user?.userId,
+            archive: dto.archive ? dto.archive : false,
+          },
         },
       });
       return response;
@@ -43,13 +47,14 @@ export class TodoService {
 
   async createTask(dto: TodoDto, Request) {
     try {
-      const response = await this.prisma.todo.create({
+      await this.prisma.todo.create({
         data: {
           title: dto.title,
           user_id: Request.user?.userId,
         },
       });
-      return response;
+      // return response;
+      return this.getAllTodos(dto, Request);
     } catch (error) {
       console.log(error);
 
@@ -57,9 +62,9 @@ export class TodoService {
     }
   }
 
-  async completeTask(dto: TodoDto) {
+  async completeTask(dto: TodoDto, Request) {
     try {
-      const response = await this.prisma.todo.update({
+      await this.prisma.todo.update({
         data: {
           is_completed: true,
           completed_at: new Date(),
@@ -68,8 +73,8 @@ export class TodoService {
           id: Number(dto.id),
         },
       });
-
-      return response;
+      return this.getAllTodos(dto, Request);
+      // return response;
     } catch (error) {
       return error.message;
     }
@@ -93,17 +98,32 @@ export class TodoService {
     }
   }
 
-  async deleteTask(dto: TodoDto) {
+  async deleteTask(dto: TodoDto, Request) {
     try {
-      const response = await this.prisma.todo.update({
+      const checkExistance = await this.prisma.todo.findUnique({
         where: {
           id: Number(dto.id),
         },
-        data: {
-          archive: true,
-        },
       });
-      return response;
+
+      if (checkExistance.is_completed) {
+        await this.prisma.todo.update({
+          where: {
+            id: Number(dto.id),
+          },
+          data: {
+            archive: true,
+          },
+        });
+      } else {
+        await this.prisma.todo.delete({
+          where: {
+            id: Number(dto.id),
+          },
+        });
+      }
+
+      return this.getAllTodos(dto, Request);
     } catch (error) {
       return error.message;
     }

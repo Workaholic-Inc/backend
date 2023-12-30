@@ -1,14 +1,14 @@
 import { TodoService } from './todo.service';
 import { Post, Controller, Body, Request, Get } from '@nestjs/common';
-import { TodoDto } from './todo-dto';
+import { TodoDto } from './dto';
 
 @Controller('todo')
 export class TodoController {
   constructor(private todoService: TodoService) {}
 
   @Get('get-all-todos')
-  getAllTodos(@Request() req) {
-    return this.todoService.getAllTodos(req);
+  getAllTodos(@Body() dto: TodoDto, @Request() req) {
+    return this.todoService.getAllTodos(dto, req);
   }
 
   @Post('get-todo-by-status')
@@ -22,8 +22,8 @@ export class TodoController {
   }
 
   @Post('complete-task')
-  completeTask(@Body() dto: any) {
-    return this.todoService.completeTask(dto);
+  completeTask(@Body() dto: TodoDto, @Request() req) {
+    return this.todoService.completeTask(dto, req);
   }
 
   @Post('update-task')
@@ -32,7 +32,7 @@ export class TodoController {
   }
 
   @Post('delete-task')
-  deleteTask(@Body() dto: any) {
-    return this.todoService.deleteTask(dto);
+  deleteTask(@Body() dto: any, @Request() req) {
+    return this.todoService.deleteTask(dto, req);
   }
 }

@@ -53,7 +53,10 @@ export class AuthService {
       });
 
       if (!user) {
-        throw new ForbiddenException('No User Found');
+        // throw new ForbiddenException('No User Found');
+        return {
+          msg: 'No User Found',
+        };
       }
 
       //   compare passwords
@@ -62,7 +65,7 @@ export class AuthService {
         throw new ForbiddenException('Credentials incorrect');
       }
 
-      const token = await this.signToken(user.id, user.email);
+      const token = await this.signToken(user.id, user.email, user.name);
 
       return {
         msg: 'Login successful',
@@ -76,10 +79,12 @@ export class AuthService {
   async signToken(
     userId: number,
     email: string,
+    name: string,
   ): Promise<{ access_token: string }> {
     const payload = {
       userId,
       email,
+      name,
     };
 
     const token = await this.jwtService.sign(payload, {
