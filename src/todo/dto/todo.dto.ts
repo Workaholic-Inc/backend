@@ -9,7 +9,7 @@ export class TodoDto {
   title: string;
 
   @IsBoolean()
-  is_complete: boolean;
+  is_completed: boolean;
 
   @IsBoolean()
   archive: boolean;

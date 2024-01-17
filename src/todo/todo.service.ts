@@ -20,6 +20,7 @@ export class TodoService {
           AND: {
             user_id: Request.user?.userId,
             archive: dto.archive ? dto.archive : false,
+            is_completed: dto.is_completed,
           },
         },
       });
@@ -35,7 +36,7 @@ export class TodoService {
         where: {
           AND: {
             user_id: Request.user?.userId,
-            is_completed: dto.is_complete,
+            is_completed: dto.is_completed,
           },
         },
       });
@@ -88,8 +89,8 @@ export class TodoService {
         },
         data: {
           title: dto.title,
-          is_completed: dto.is_complete,
-          completed_at: dto.is_complete === false ? null : undefined,
+          is_completed: dto.is_completed,
+          completed_at: dto.is_completed === false ? null : undefined,
         },
       });
       return response;
