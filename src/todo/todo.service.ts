@@ -1,5 +1,5 @@
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { TodoDto } from './dto';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -57,17 +57,21 @@ export class TodoService {
       // return response;
       return this.getAllTodos(dto, Request);
     } catch (error) {
-      console.log(error);
-
       return error;
     }
   }
 
   async completeTask(dto: TodoDto, Request) {
     try {
+      const checkExistance = await this.prisma.todo.findUnique({
+        where: {
+          id: Number(dto.id),
+        },
+      });
+      if (!checkExistance) throw new NotFoundException('Task not found');
       await this.prisma.todo.update({
         data: {
-          is_completed: true,
+          is_completed: checkExistance.is_completed === true ? false : true,
           completed_at: new Date(),
         },
         where: {
