@@ -1,13 +1,16 @@
 pipeline {
-  agent any
-  stages {
-    stage('Checkout code') {
-      steps {
-        git(url: 'https://github.com/Workaholic-Inc/backend', branch: 'main')
-      }
+  agent {
+        label 'win-agent'
     }
-
+  triggers {
+        pollSCM '* * * * *'
+    }
+  environment {
+      scannerHome = tool name: 'sonarscanner'
+    }
+  stages {
     stage('Install Packages') {
+
       steps {
         sh 'yarn install'
       }
@@ -19,12 +22,11 @@ pipeline {
       }
     }
 
-    stage('Scan') {
+    stage('SonarQube Analysis') {
       steps {
-        withSonarQubeEnv(envOnly: true, installationName: 'workaholic_backend', credentialsId: 'sonar-key') {
-          sh 'bat "${scannerHome}\\\\bin\\\\sonar-scanner"'
+        withSonarQubeEnv('sonarqube_server') {
+          bat "${scannerHome}\\bin\\sonar-scanner"
         }
-
       }
     }
 
