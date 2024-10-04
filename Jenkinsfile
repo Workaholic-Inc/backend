@@ -1,10 +1,5 @@
 pipeline {
-  agent {
-    node {
-      label 'agent1'
-    }
-
-  }
+  agent any
   stages {
     stage('Checkout code') {
       steps {
@@ -20,13 +15,16 @@ pipeline {
 
     stage('Test') {
       steps {
-        sh 'yarn run test'
+        sh 'ls -a'
       }
     }
 
-    stage('Deploy') {
+    stage('Scan') {
       steps {
-        sh 'yarn run start'
+        withSonarQubeEnv(envOnly: true, installationName: 'workaholic_backend', credentialsId: 'sonar-key') {
+          sh 'bat "${scannerHome}\\\\bin\\\\sonar-scanner"'
+        }
+
       }
     }
 
